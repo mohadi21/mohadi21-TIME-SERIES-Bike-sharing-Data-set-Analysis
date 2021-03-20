@@ -1,0 +1,871 @@
+---
+title: "Time series analysis Mohamed Boudjemai"
+output: github_document
+---
+
+Analyse de l'ensemble de donnC)es de partage de vC)los
+
+
+Les systC(mes de partage de vC)los sont une nouvelle gC)nC)ration de location de vC)los traditionnels oC9 tout le processus d'adhC)sion, de location et de retour est devenu automatique. GrC"ce C  ces systC(mes, l'utilisateur peut facilement louer un vC)lo C  partir d'une position particuliC(re et revenir C  une autre position. Actuellement, il existe environ 500 programmes de vC)los en libre-service dans le monde, composC)s de plus de 500 milliers de vC)los. Aujourd'hui, ces systC(mes suscitent un grand intC)rC*t en raison de leur rC4le important dans les problC(mes de circulation, d'environnement et de santC).
+
+Outre les applications intC)ressantes des systC(mes de vC)los en libre-service dans le monde rC)el, les caractC)ristiques des donnC)es gC)nC)rC)es par ces systC(mes les rendent attractifs pour la recherche. Contrairement C  d'autres services de transport comme le bus ou le mC)tro, la durC)e du trajet, la position de dC)part et d'arrivC)e est explicitement enregistrC)e dans ces systC(mes. Cette fonction transforme le systC(me de partage de vC)los en un rC)seau de capteurs virtuels qui peut C*tre utilisC) pour dC)tecter la mobilitC) en ville. Par consC)quent, on s'attend C  ce que la plupart des C)vC)nements importants dans la ville puissent C*tre dC)tectC)s grC"ce C  la surveillance de ces donnC)es.
+
+Cet ensemble de donnC)es contient le dC)compte horaire et quotidien des vC)los de location entre les annC)es 2011 et 2012 dans le systC(me de partage de vC)los Capital C  Washington, DC avec les informations mC)tC)orologiques et saisonniC(res correspondantes.
+
+
+Content
+Both hour.csv and day.csv have the following fields, except hr which is not available in day.csv
+
+
+1.	Examine your data
+Data : https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset 
+
+```{r}
+day.data <- read.csv(file = "C:/INFO DESCARTES/M2/TEMPOTRELLE/day.csv")
+Hours <- read.csv(file = "C:/INFO DESCARTES/M2/TEMPOTRELLE/hour.csv")
+print("_______________________importation des donnC)es_________________")
+```
+```{r}
+print("______________Dimension__________")
+print(dim(day.data))
+print(dim(hour.data))
+```
+```{r}
+print("______________nom des attributs___________________")
+print(names(day.data))
+print("____________________________________________________________")
+print(names(hour.data))
+```
+```{r}
+summary(day.data)
+```
+```{r}
+summary(hour.data)
+```
+```{r}
+plot(day.data)
+```
+```{r}
+print("_______________structure________________")
+str(day.data)
+```
+```{r}
+is.null(day.data)
+print(" pas de valeur null")
+```
+```{r}
+boxplot(day.data$casual ,day.data$registered, col = c("blue", "green"), ylab = "Number of bikes", xlab = "Rental method (Casual - Registered")
+
+```
+Q1 - Comment les tempC)ratures changent-elles au fil des saisons?
+Nous devons ajouter une nouvelle variable contenant la tempC)rature en Celsius. Ensuite, nous crC)ons un
+```{r}
+day.data$temp.cel <- day.data$temp*(39 + 8) - 8
+day.temp <- ts(day.data$temp.cel)
+plot(day.temp, main = "Temperature across the 2 years", ylab="Temperature in Celsius", col="blue", xlab="Time by day index (1 -> 2011-01-01)")
+
+```
+La tempC)rature augmente au dC)but de chaque annC)e (printemps et C)tC)), atteignant son maximum en C)tC), puis continue de baisser (automne et hiver) jusqu'C  la fin de l'annC)e.
+
+Q2 - Quelles sont les tempC)ratures moyennes et mC)dianes?
+TempC)rature moyenne et mC)diane du printemps
+```{r}
+spring.temp <- subset(day.data, season == 1)$temp.cel
+print(mean(spring.temp))
+print(median(spring.temp))
+```
+TempC)rature moyenne et mC)diane de l'C)tC)
+```{r}
+summer.temp <- subset(day.data, season == 2)$temp.cel
+print(mean(summer.temp))
+```
+```{r}
+print(median(summer.temp))
+```
+TempC)rature moyenne et mC)diane de l'automne
+```{r}
+fall.temp <- subset(day.data, season == 3)$temp.cel
+print(mean(fall.temp))
+```
+```{r}
+print(median(fall.temp))
+```
+TempC)rature moyenne et mC)diane de l'hiver
+```{r}
+winter.temp <- subset(day.data, season == 4)$temp.cel
+print(mean(winter.temp))
+```
+```{r}
+print(median(winter.temp)) 
+```
+```{r}
+boxplot(subset(day.data, season == 1)$temp.cel, subset(day.data, season == 2)$temp.cel, subset(day.data, season == 3)$temp.cel, subset(day.data, season == 4)$temp.cel, col = c("green", "red", "orange", "blue"), xlab = "printemps - l'C)tC) - l'automne - l'hiver", ylab = "Temperature")
+```
+```{r}
+day = day.data
+# Converting the nomalized temperature:
+day$raw.temp <- (day$temp*41)
+#2. Calculating Median, Mean and Standard deviation of spring.
+spring <- subset(day, season == 1)$raw.temp
+sp.mean <- mean(spring) 
+sp.median <- median(spring) 
+sp.sd <- sd(spring) 
+
+
+#3. Calculating Median, Mean and Standard deviation of summer.
+summer <- subset(day, season == 2)$raw.temp
+su.mean <- mean(summer) 
+su.median <- median(summer) 
+su.sd <- sd(summer) 
+
+
+#3. Calculating Median, Mean and Standard deviation of fall.
+fall <- subset(day, season == 3)$raw.temp
+fa.mean <- mean(fall)
+fa.median <-median(fall)
+fa.sd <- sd(fall)
+
+
+#4. Calculating Median, Mean and Standard deviation of winter.
+winter <- subset(day, season == 4)$raw.temp
+wi.mean <- mean(winter)
+wi.median <- median(winter)
+wi.sd <- sd(winter)
+```
+Printemps:
+La tempC)rature moyenne du printemps C)tait de 12,21.
+La tempC)rature mC)diane du printemps C)tait de 11,72.
+L'C)cart type de la tempC)rature au printemps C)tait de 4,21.
+C	tC):
+La tempC)rature moyenne de l'C)tC) C)tait de 22,32.
+La tempC)rature mC)diane de l'C)tC) C)tait de 23,05.
+L'C)cart type de la tempC)rature en C)tC) C)tait de 5,03.
+Tombe:
+La tempC)rature moyenne de chute C)tait de 28,96.
+La tempC)rature mC)diane de chute C)tait de 29,3.
+L'C)cart type de la tempC)rature C  l'automne C)tait de 2,9.
+Hiver:
+La tempC)rature moyenne de l'hiver C)tait de 17,34.
+La tempC)rature mC)diane de l'hiver C)tait de 16,78.
+L'C)cart type de la tempC)rature en hiver C)tait de 4,42.
+```{r}
+#create histogram for the distribution of temperatures in spring.
+hist(x = spring, 
+     main = "Temperatures in Spring", 
+     xlab = "Temperature in Celcius", 
+     ylab = "Number of Days",
+     xlim = c(0, 25),
+     ylim = c(0, 45))
+
+abline(v = sp.mean, lwd = 2, lty = 1, col = "red")  
+text(x = 17, y = 35, 
+     labels = paste("Mean = ", round(mean(spring),2), sep = ""), col="red" )
+
+abline(v = sp.median, lwd = 2, lty = 3, col = "blue") 
+text(x = 6, y = 35, 
+     labels = paste("Median = ", round(median(spring),2), sep = ""), col="blue" )
+```
+```{r}
+#create a histogram for the distribution of temperatures in summer.
+hist(x = summer, 
+     main = "Temperatures in Summer", 
+     xlab = "Temperature in Celcius", 
+     ylab = "Number of Days", 
+      xlim = c(0, 35), ylim = c(0, 40)
+    )
+abline(v = su.mean, lwd = 2, lty = 1, col = "red") 
+text( x = 15, y = 40, 
+     labels = paste("Mean = ", round(mean(summer),2), sep = ""),
+col = "red")
+
+abline(v = su.median, lwd = 2, lty = 3, col = "blue") 
+text(x = 31, y = 40, 
+     labels = paste("Median = ", round(median(summer),2), sep = ""), col = "blue" )
+```
+```{r}
+#create a histogram for the distribution of temperatures in fall. 
+hist(x = fall, 
+     main = "Temperatures in Fall", 
+     xlab = "Temperature in Celcius", 
+     ylab = "Number of Days", 
+      xlim = c(15, 40), ylim = c(0, 70)
+    )
+abline(v = fa.mean, lwd = 2, lty = 1, col = "red") 
+text(x = 24, y = 60, 
+     labels = paste("Mean = ", round(mean(fall),3), sep = ""), col = "red" )
+
+abline(v = fa.median, lwd = 2, lty = 3, col ="blue") 
+text(x = 35, y = 60, 
+     labels = paste("Median = ", round(median(fall),3), sep = ""), col ="blue" )
+```
+```{r}
+#create a histogram for the distribution of temperatures in winter. 
+hist(x = winter, 
+     main = "Temperatures in Winter", 
+     xlab = "Temperature in Celcius", 
+     ylab = "Number of Days", 
+    xlim = c(0, 30), ylim = c(0, 40)
+    )
+
+abline(v = wi.mean, lwd = 2, lty = 1, col = "red")  
+text(x = 23, y = 40, 
+     labels = paste("Mean = ", round(mean(winter),2), sep = ""), col = "red" )
+
+abline(v = wi.median, lwd = 2, lty = 3, col ="blue") 
+text(x = 10, y = 40, 
+     labels = paste("Median = ", round(median(winter),2), sep = ""), col ="blue" )
+```
+```{r}
+#The Dataset is already recoded and correct.
+#For this question we converted "atemp" because it was devided of 50.
+day$raw.atemp <-(day$atemp * 50)
+
+#Create a new column of the mean of raw.temp and raw.atemp.
+day$raw.mean.temp.atemp <- (day$raw.temp + day$raw.atemp)/2
+#Correlation between raw.temp and the total count of bike rentals.
+
+cor.temp <- cor.test(x = day$raw.temp,
+y = day$cnt)
+
+cor.temp
+```
+```{r}
+Temperature <- day$raw.temp
+Amount.Rentals <- day$cnt
+#Correlation between atemp and the total count of bike rentals.
+cor.atemp <- cor.test(x = day$raw.atemp,
+y = day$cnt)
+cor.atemp
+```
+```{r}
+Feeled.Temperature <- day$raw.atemp
+Amount.Rentals <- day$cnt
+#Correlation between mean.temp.atemp and the total count of bike rentals.
+day$raw.mean.temp.atemp <-(day$raw.temp + day$raw.atemp)/2
+cor.mean.temp.atemp <- cor.test(x = day$raw.mean.temp.atemp,
+y = day$cnt)
+cor.mean.temp.atemp
+```
+```{r}
+Feeled.Raw.Temperature <- day$raw.mean.temp.atemp
+Amount.Rentals <- day$cnt
+```
+
+```{r}
+par(mfrow=c(2,2))
+
+plot(x = Temperature, y = Amount.Rentals, main = "Correlation", col = "red")
+abline(lm(Amount.Rentals ~ Temperature), col = "blue")
+legend("topleft", legend = paste("cor = ", round(cor(Temperature, Amount.Rentals), 2), sep = ""),lty = 1, col = "blue")
+
+plot(x = Feeled.Temperature, y = Amount.Rentals, main = "Correlation", col = "blue")
+abline(lm(Amount.Rentals ~ Feeled.Temperature), col = "red")
+legend("topleft", legend = paste("cor = ", round(cor(Feeled.Temperature, Amount.Rentals), 2), sep = ""),lty = 1, col = "red")
+
+plot(x = Feeled.Raw.Temperature, y = Amount.Rentals, main = "Correlation", col = "green")
+abline(lm(Amount.Rentals ~ Feeled.Raw.Temperature), col = "orange")
+legend("topleft", legend = paste("cor = ", round(cor(Temperature, Amount.Rentals), 2), sep = ""),lty = 1, col = "orange")
+
+
+plot(x = 1, y = 1, xlab = "Temperature", ylab = "Amount of rentals", xlim = c(0, 40), ylim = c(0, 10000), main = "Three correlations combined")
+
+points(Feeled.Raw.Temperature, Amount.Rentals, pch = 8, col = "green")
+points(Temperature, Amount.Rentals, pch = 8, col = "red")
+points(Feeled.Temperature, Amount.Rentals, pch = 8, col = "blue")
+```
+
+```{r}
+# Changing the names of columns
+names(Day)[4:5]<-c("year","month")
+names(Day)[2]<-c("date")
+names(Day)[12]<-c("humidity")
+names(Day)[16]<-c("count")
+# Checking for null values
+is.null(Day)
+```
+```{r}
+
+Day$year<-factor(Day$year,levels = c(0,1),labels =c(2011,2012))
+table(Day$year)
+
+Day$season<-factor(Day$season,levels = c(1,2,3,4),labels = c('spring','summer','fall','winter'))
+table(Day$season)
+# Boxplot for Count vs Holiday
+
+boxplot(Day$count ~ Day$holiday,
+        data =Day,
+        main = "Total Bike Rentals Vs Holiday/Working Day",
+        xlab = "Holiday/Working Day",
+        ylab = "Total Bike Rentals",
+        col = c("pink", "pink1", "pink2", "pink3")) 
+```
+```{r}
+#Boxplot for count vs weathersituation
+boxplot(Day$count ~ Day$weathersit,
+        data = Day,
+        main = "Total Bike Rentals Vs Weather Situation",
+        xlab = "Weather Situation",
+        ylab = "Total Bike Rentals",
+        col = c("blue", "green", "red", "yellow")) 
+```
+```{r}
+library(ggplot2)
+#"Month vs Rental Count based on year
+ggplot(data=Day)+geom_col(aes(x=factor(month),y=count))+
+  expand_limits(y=0)+facet_wrap(~year)+xlab("Month")+ylab("Rental Count")+ggtitle("Month vs Rental Count based on year")
+```
+```{r}
+# Rental vs weekday
+
+boxplot(Day$count ~ Day$weekday,
+        data = Day,
+        main = "Total Bike Rentals Vs Day of Week",
+        xlab = "Day of Week",
+        ylab = "Total Bike Rentals",
+        col = c("yellow")) 
+```
+```{r}
+# Histograms
+
+# Total rental count
+hist(Day$count, breaks = 20, 
+     ylab = 'Frequency', xlab = 'Rental Count',
+     main = 'Total Bike Rental Count', col = 'Red' )
+```
+```{r}
+# Windspeed
+hist(Day$windspeed, main="Histogram for Wind Speed", 
+     xlab="wind speed", col = "orange")
+```
+```{r}
+# Actual temperature
+hist(Day$atemp, main="Histogram for Actual Temperature", 
+     xlab="Temperature", col = "blue")
+```
+```{r}
+Day= day.data
+# Humidity
+hist(Day$humidity, main="Histogram for Humidity", 
+     xlab="Humidity", col = "maroon")
+```
+Le graphique montre la relation entre la variable Total Bike Rentals (cnt) et la saison. Le nombre moyen de locations de vC)los est le plus C)levC) en C)tC) et en automne.
+
+Le graphique montre la relation entre la variable Total Bike Rentals (cnt) et les vacances. On constate que le nombre moyen de locations de vC)los les jours ouvrables est plus C)levC) que les vacances.
+
+Le graphique montre la relation entre la variable Total Bike Rentals (cnt) et la mC)tC)o. Il y a une tendance nettement C  la baisse des locations de vC)los lorsque le temps est mauvais.
+
+Le graphique montre la relation entre la variable Total Bike Rentals (cnt) et l'annC)e. Nous pouvons voir que la tendance gC)nC)rale a augmentC) au cours de la pC)riode de deux ans. Et chaque annC)e, il y a C)normC)ment de locations de vC)los pendant les saisons d'C)tC) et d'automne.
+```{r}
+bk_sh_dy <- day.data
+par(mfrow=c(2,2))
+bk_sh_dy$season <- factor(format(bk_sh_dy$season, format="%A"),
+                          levels = c("1", "2","3","4") , labels = c("Spring","Summer","Fall","Winter"))
+table(bk_sh_dy$season)
+```
+```{r}
+bk_sh_dy$holiday <- factor(format(bk_sh_dy$holiday, format="%A"),
+                          levels = c("0", "1") , labels = c("Working Day","Holiday"))
+table(bk_sh_dy$holiday)
+```
+```{r}
+bk_sh_dy$weathersit <- factor(format(bk_sh_dy$weathersit, format="%A"),
+                          levels = c("1", "2","3","4") , 
+               labels = c("Good:Clear/Sunny","Moderate:Cloudy/Mist","Bad: Rain/Snow/Fog","Worse: Heavy Rain/Snow/Fog"))
+table(bk_sh_dy$weathersit)
+```
+```{r}
+bk_sh_dy$yr <- factor(format(bk_sh_dy$yr, format="%A"),
+                          levels = c("0", "1") , labels = c("2011","2012"))
+table(bk_sh_dy$yr)
+```
+```{r}
+bk_sh_dy$actual_temp <- bk_sh_dy$temp*41
+bk_sh_dy$actual_feel_temp <- bk_sh_dy$atemp*50
+bk_sh_dy$actual_windspeed <- bk_sh_dy$windspeed*67
+bk_sh_dy$actual_humidity <- bk_sh_dy$hum*100
+bk_sh_dy$mean_acttemp_feeltemp <- (bk_sh_dy$actual_temp+bk_sh_dy$actual_feel_temp)/2
+```
+
+```{r}
+par(mfrow=c(2,2))
+
+plot(bk_sh_dy$actual_temp, bk_sh_dy$cnt ,type = 'h', col= 'yellow', xlab = 'Actual Temperature', ylab = 'Total Bike Rentals')
+   
+plot(bk_sh_dy$actual_feel_temp, bk_sh_dy$cnt ,type = 'h', col= 'yellow', xlab = 'Actual Feel Temperature', ylab = 'Total Bike Rentals')
+   
+plot(bk_sh_dy$actual_windspeed, bk_sh_dy$cnt ,type = 'h', col= 'yellow', xlab = 'Actual Windspeed', ylab = 'Total Bike Rentals')
+   
+plot(bk_sh_dy$actual_humidity, bk_sh_dy$cnt ,type = 'h', col= 'yellow', xlab = 'Actual Humidity', ylab = 'Total Bike Rentals')
+```
+
+```{r}
+# Count on Temperature
+ggplot (Day, aes( x= temp, y = count, colour = count))+geom_point()+geom_smooth()+xlab("Temperature") + ylab ("Total Count")+ggtitle("Total Count of Bikes used depending on Temperature")
+```
+
+Q3 - Y a-t-il une corrC)lation entre le temp / atemp / mean.temp.atemp et le nombre total de locations de vC)los?
+Nous ajoutons d'abord deux nouvelles colonnes C  l'ensemble de donnC)es.
+```{r}
+day.data$atemp.cel <- day.data$atemp*(50 + 16) - 16
+day.data$mean.temp.atemp = (day.data$temp.cel + day.data$atemp.cel)/2
+```
+Ensuite, nous calculons les corrC)lations: * CorrC)lation entre le temp et le cnt
+```{r}
+cor(day.data$temp.cel, day.data$cnt, method = c("pearson"))
+```
+CorrC)lation entre l'atemp et le cnt
+```{r}
+cor(day.data$atemp.cel, day.data$cnt, method = c("pearson"))
+```
+CorrC)lation entre mean.temp.atemp et cnt
+```{r}
+cor(day.data$mean.temp.atemp, day.data$cnt, method = c("pearson"))
+```
+Les valeurs de corrC)lation sont supC)rieures C  0,6. Nous pouvons affirmer qu'il existe une corrC)lation entre les 3 variables de tempC)rature et le nombre total de locations de vC)los.
+
+```{r}
+library(corrplot)
+corplot_Day <- cor(Day_cor)
+corrplot(corplot_Day, method="number")
+```
+
+
+```{r}
+# bean plot for holiday vs working day
+t <- t.test(Day$count[Day$holiday == 0],Day$count[Day$holiday == 1])
+
+library(beanplot)
+library(RColorBrewer)
+bean.cols <- lapply(brewer.pal(6, "Set3"),function(x){return(c(x, "black", "gray", "red"))})
+beanplot(count ~ holiday,data = Day,main = "Bike Rents by Type of a Day",xlab = "Type of Day",ylab = "Number of rents",col = bean.cols,lwd = 1,what = c(1,1,1,0),log = "")
+```
+
+Q4 - Quelles sont la tempC)rature moyenne, l'humiditC), la vitesse du vent et le total des locations par mois?
+```{r}
+header <- c("Month", "Mean Temperature", "Mean Humidity", "Mean Windspeed", "Total rentals")
+per.months.df <- data.frame()
+for (i in (1:12)) {
+  sub.data <- subset(day.data, mnth == i)
+  line <-  c(i, mean((sub.data)$temp.cel), mean((sub.data)$hum*100), 
+             mean((sub.data)$windspeed*67), sum((sub.data)$cnt))
+  per.months.df = rbind(per.months.df, line)
+}
+colnames(per.months.df) <- header
+per.months.df
+```
+Q5 - La tempC)rature est-elle associC)e C  la location de vC)los (enregistrC)s ou occasionnels)?
+Tout d'abord, nous calculons les corrC)lationsb &
+```{r}
+cor(day.data$temp.cel, day.data$casual, method = c("pearson"))
+```
+```{r}
+cor(day.data$temp.cel, day.data$registered, method = c("pearson"))
+```
+La tempC)rature et le nombre d'utilisateurs de vC)los ne sont pas corrC)lC)s!
+```{r}
+day.casual <- ts(day.data$casual)
+day.registered <- ts(day.data$registered)
+par(mfrow=c(2,1))
+plot(day.temp, day.casual, type="h", xlab="Temperature", ylab="Count of casual users")
+plot(day.temp, day.registered, type="h", xlab="Temperature", ylab="Count of registered users")
+```
+```{r}
+# Scatterpoint for the total number of bike used
+
+ggplot (Day, aes( x= temp, y = count, colour = count))+geom_point()+geom_smooth()+xlab("Temperature") + ylab ("Total Count")+ggtitle("Total Count of Bikes used depending on Temperature")
+```
+```{r}
+#correlogram
+library(corrgram)
+key<- subset(Day,select = c(count,temp,atemp,humidity,windspeed,weathersit,workingday,season))
+corrgram(key, order=TRUE, lower.panel=panel.shade,upper.panel=panel.pie, text.panel=panel.txt,main="Corrgram of Data")
+
+```
+```{r}
+#Heat map
+ggplot(data=Day,aes(x=month,y=year,fill=count))+geom_tile()+labs(title="Bike Rental count by month and year",x="Month",y="Year")
+```
+```{r}
+#Density plot
+ggplot(data=Day,aes(x=count,fill=year))+geom_density(alpha=0.1)+scale_x_log10()+labs(title="Rental count year wise",x="Count")
+```
+```{r}
+ggplot(data=Day,aes(x=count,fill=season))+geom_density(alpha=0.1)+scale_x_log10()+labs(title="Rental count season wise",x="Count")
+```
+```{r}
+# Plotting the association:
+plot(x = 1, y = 1, xlab = "Temperature in Celcius", ylab = "Bike rentals", type = "n", main = "Association between temperature and bike rentals",
+xlim = c(0, 40), ylim = c(0, 7000))
+
+
+#Calculating min and max for the x-axis and y-axis:
+min(day$raw.temp)
+max(day$raw.temp)
+min(day$casual)
+min(day$registered)
+max(day$casual)
+max(day$registered)
+#Adding points to the plot
+day$raw.temp <- (day$temp*41)
+points(day$raw.temp, day$casual, pch = 16, col = "red")
+points(day$raw.temp, day$registered, pch = 16, col = "skyblue")
+
+# Adding a legend to the plot
+legend("topleft",legend = c("casual", "registered"), col = c("red","skyblue"), pch = c(16, 16), bg = "white")
+
+
+
+# Calculating the correlation between raw.temp and registered users and between raw.temp and causal users
+cor.reg <- cor.test(x = day$raw.temp, y = day$registered)
+cor.reg
+cor.cas <- cor.test(x = day$raw.temp,
+y = day$casual)
+cor.cas
+# Adding Correlation line and the correlation value to the plot
+abline(lm(day$registered ~ day$raw.temp), lty = 6, col = "blue")
+
+abline(lm(day$casual ~ day$raw.temp), lty = 6, col = "orange")
+
+reg <- paste("cor = ", round(cor(day$registered, day$raw.temp), 2), sep = "")
+cas <- paste("cor = ", round(cor(day$casual, day$raw.temp), 2), sep = "")
+
+legend("left",legend = c(cas, reg) , col = c('orange', 'blue'),pch = c(16, 16), bg = "white")
+```
+
+
+```{r}
+library(lubridate)
+library(tseries)
+library(forecast)
+library("TTR")
+```
+
+```{r}
+seqplot.ts(day.casual, day.registered, ylab = "Casual, Registred", xlab="Time by day index (1 -> 2011-01-01)")
+```
+
+
+Les locations de vC)los enregistrC)es et les locations de vC)los occasionnels obtiennent leurs valeurs les plus C)levC)es lorsque la tempC)rature se situe entre 14 et 24 degrC)s. Et pour les deux modes de location, le nombre de locations augmente avec la tempC)rature, atteignant un pic C  20 degrC)s, puis diminue lentement lorsque la tempC)rature est C)levC)e.
+
+Dans ce qui suit, nous vous construisons un modC(le prC)dictif du nombre de vC)los en libre-service par jour.
+
+Q6 - Tracez le cnt vs dteday et examinez ses modC(les et irrC)gularitC)s
+
+```{r}
+Day<-data.frame(day.data)
+#as.Date(day.data$dteday)
+par(mfrow=c(1,1))
+plot(as.factor(day.data$dteday), day.data$cnt )
+```
+Le nombre total de vC)los de location tracC) dans le temps fait un graphique en forme de double cloche, montrant la mC*me forme gC)nC)rale et une augmentation de la location de vC)los en 2012.
+
+Q7 - Nettoyez les valeurs aberrantes ou manquantes si nC)cessaire
+Nous crC)ons maintenant deux nouvelles sC)ries chronologiques. day.cnt.raw contient la sC)rie chronologique initiale (avant le nettoyage) et day.dteday pour la dimension temporelle.
+```{r}
+day.cnt.raw <- ts(day.data$cnt)
+day.dteday <- ts(as.factor(day.data$dteday))
+plot(day.dteday, day.cnt.raw, col="blue")
+```
+Ensuite, nous supprimons les contours en utilisant tsclean (). Nous extrayons C)galement les valeurs aberrantes.
+```{r}
+day.cnt <- tsclean(day.cnt.raw)
+outliners <- day.cnt.raw[day.cnt!=day.cnt.raw]
+outliners
+```
+Enfin, nous pouvons tracer la sC)rie chronologique nettoyC)e.
+```{r}
+plot(day.dteday, day.cnt, col="blue")
+```
+Q8 - Lissez votre sC)rie chronologique et comparez-la avec l'original
+Pour cette partie, j'utilise deux types de lissage: un lissage exponentiel simple et une moyenne mobile simple d'ordre 10.
+```{r}
+day.cnt.smoothed.se <- HoltWinters(day.cnt, beta=FALSE, gamma=FALSE)
+day.cnt.smoothed.se
+```
+```{r}
+plot(day.cnt.smoothed.se)
+```
+```{r}
+day.cnt.smoothed.sma <- SMA(day.cnt,n=10)
+day.cnt.smoothed.sma
+```
+```{r}
+plot(day.cnt.smoothed.sma, col="blue")
+```
+2. DC)composez vos donnC)es
+Nous allons maintenant utiliser la sC)rie temporelle lissC)e d'ordre 7, que nous nommerons ci-aprC(s cnt_ma.
+
+Nous crC)ons d'abord la sC)rie chronologique lissC)e avec l'ordre 7.
+```{r}
+cnt_ma <- SMA(day.cnt,n=7)
+plot(cnt_ma, col="blue")
+```
+Q1 - Transformez cnt_ma en une sC)rie temporelle de frC)quence 30 nommC)e count_ma.
+```{r}
+count_ma <- ts(day.cnt, frequency = 30)
+plot(count_ma, col="blue")
+```
+Q2 - La sC)rie count_ma semble-t-elle avoir des tendances ou une saisonnalitC)?
+Oui, la sC)rie temporelle count_ma montre une tendance gC)nC)rale C  l'augmentation des loyers au cours des deux premiC(res saisons, puis C  la diminution au cours des deux derniC(res saisons. La sC)rie chronologique montre C)galement un cycle rC)pC)titif C  court terme au cours des deux annC)es.
+
+Q3 - Utilisez decompose () ou stl () pour examiner et C)ventuellement supprimer des composants de la sC)rie
+```{r}
+count_ma.decomposed <- decompose(count_ma)
+plot(count_ma.decomposed, col="blue")
+```
+La composante saisonniC(re confirme notre hypothC(se et rC)vC(le un cycle mensuel saisonnier encore plus intC)ressant.
+
+Q4 - CrC)er une sC)rie chronologique deseasonal_cnt en supprimant la composante saisonniC(re
+```{r}
+deseasonal_cnt <- count_ma - count_ma.decomposed$seasonal
+plot(count_ma, col = "blue", xlab="Time by months")
+legend(1, 8600, legend=c("count_ma", "deseasonal_cnt"), col=c("blue", "yellow"), lty=1:2, cex=0.8)
+lines(deseasonal_cnt, col = 'yellow')
+```
+3 - StationnaritC)
+** Q - La sC)rie count_ma est-elle stationnaire? Sinon, comment faire de la papeterie **
+
+```{r}
+adf.test(count_ma, alternative = "stationary")
+```
+La valeur p est supC)rieure C  0,05, donc count_ma n'est pas stationnaire. ACF dC)crit dans quelle mesure la valeur actuelle de la sC)rie est liC)e C  ses valeurs passC)es. Ici, cela confirme C)galement que la sC)rie n'est pas stationnaire puisque l'autocorrC)lation diminue progressivement.
+```{r}
+acf(count_ma)
+```
+```{r}
+pacf(count_ma)
+```
+Pour rendre la sC)rie chronologique stationnaire, nous utiliserons la diffC)renciation. La diffC)renciation consiste C  soustraire chaque point de donnC)es de la sC)rie de son successeur. PremiC(rement, nous devons savoir combien de diffC)rences sont nC)cessaires.
+
+```{r}
+count_ma.diff1 <- diff(count_ma,differences = 1)
+adf.test(count_ma.diff1, alternative = "stationary")
+```
+La valeur p est infC)rieure C  0,05. count_ma.diff1 est stationnaire. Nous concluons que nous n'avons besoin que d'une diffC)renciation pour rendre count_ma stationnaire.
+```{r}
+Day= day.data
+# SIMPLE LINEAR REGRESSION
+library(caTools)
+set.seed(123)
+split = sample.split(Day$windspeed,SplitRatio = .70)
+training_set1 =subset(Day, split==TRUE)
+test_set2 =subset(Day, split==FALSE)
+View(training_set1)
+View(test_set2)
+
+#Fitting Simple Linear Regression to 
+#Traiing Set
+regressor = lm(formula = windspeed ~ hum,data = training_set1)
+summary(regressor)
+```
+```{r}
+#Predicting the Test Set Result
+y_pred = predict(object = regressor,newdata = test_set2)
+#Visualising the Training Set
+library(ggplot2)
+ggplot()+geom_point(aes(x=training_set1$hum,y=training_set1$windspeed),color="red")+geom_line(aes(x=training_set1$hum,y=predict(regressor,newdata=training_set1)),color="blue")
+```
+```{r}
+#Visualizing the Test Set
+ggplot()+geom_point(aes(x=test_set2$hum,y=test_set2$windspeed),color='red')+geom_line(aes(x=test_set2$hum,y=predict(regressor,newdata=test_set2)),color='blue')
+
+```
+```{r}
+
+```
+
+```{r}
+library(ggplot2)
+
+ggplot_Temp_Rent<- ggplot(bk_sh_dy, aes(x=bk_sh_dy$actual_temp,y=bk_sh_dy$cnt))+geom_point(shape=1)+geom_smooth(method=lm)+ xlab("Actual Temp. in Celcius")+ylab("Bike Rentals")
+ggplot_Temp_Rent+scale_y_continuous(breaks=c(0,1100,2345,3500,5000,6000,7000,8000))+labs(title="Total Bike Rentals Vs Actual Temperature | Intercept = 2345")
+```
+```{r}
+lm_test<- lm(bk_sh_dy$cnt~bk_sh_dy$actual_temp)
+plot(lm_test, col = "green")
+```
+Comme nous avons constatC) que les graphiques de corrC)lation avec les locations de vC)los avec l'humiditC) et la vitesse du vent C)taient lC)gC(rement liC)s, nous avons crC)C) un modC(le linC)aire et avons trouvC) la valeur R-Squared C  46% et toutes les valeurs p pour trois variables C)taient significatives.
+
+Cependant, en vC)rifiant le tracC) des rC)sidus et le tracC) QQ, nous pouvons voir que les rC)sidus ont un modC(le et ne sont pas normalement distribuC)s, ce qui signifie que le modC(le linC)aire ne correspond pas aussi bien aux donnC)es.
+```{r}
+#K-Means Clustering
+dataset <-Day %>% select(c(temp,hum))
+View(dataset)
+library(cluster)
+#Elbow plot
+set.seed(5)
+wcss = vector()
+for(i in 1:10) 
+  wcss[i]=sum(kmeans(dataset,i)$withinss)
+plot(1:10, wcss,
+     type='b',
+     main="The Elbow Method",
+     xlab="Number of Cluster",
+     ylab='WCSS')
+```
+```{r}
+#Fitting K-mean to the dataset
+kmeans=kmeans(x=dataset,centers = 5 )
+y_kmeans = kmeans$cluster
+#Visualising the cluster
+clusplot(dataset, y_kmeans,
+         #labels = 2,
+         #shade = T,
+         lines = 0,
+         color = T,
+         main="Cluster of Temperature and humidity",
+         xlab = 'Temperature',
+         ylab = 'Humidity')
+```
+On retrouve les diffC)rents facteurs jouant un rC4le majeur dans le systC(me de vC)los en libre-service, ces analyses aident le rC)seau de vC)los en libre-service C  optimiser le systC(me de location et aussi le .AprC(s l'analyse des donnC)es un modC(le est crC)C) C  l'aide du machine learning supervisC) et de la rC)gression linC)aire pour la tempC)rature et l'humiditC) est trouvC)e et l'algorithme d'apprentissage automatique non supervisC) (K-means Clustering) est utilisC). La prC)diction est C)galement maintenue en utilisant le modC(le.
+
+4 - PrC)visions avec les modC(les ARIMA
+I - Montage du modC(le ARIMA
+Q1 - Ajuster un modC(le ARIMA C  deseasonal_cnt
+Tout d'abord, nous devons vC)rifier si la sC)rie chronologique a une tendance.
+```{r}
+deseasonal_cnt.decomposed <- decompose(deseasonal_cnt)
+plot(deseasonal_cnt.decomposed, col="blue")
+```
+deseasonal_cnt n'a pas de tendance mais une saisonnalitC). Nous vC)rifions maintenant si la sC)rie chronologique est stationnaire.
+```{r}
+adf.test(deseasonal_cnt, alternative = "stationary")
+```
+```{r}
+acf(deseasonal_cnt)
+```
+```{r}
+pacf(deseasonal_cnt)
+```
+deseasonal_cnt n'est pas stationnaire, nous devons faire une diffC)renciation.
+```{r}
+deseasonal_cnt.diff1 <- diff(deseasonal_cnt,differences = 1)
+adf.test(deseasonal_cnt.diff1, alternative = "stationary")
+```
+deseasonal_cnt.diff1 est stationnaire, puisque sa valeur p est infC)rieure C  0,05 .adf.test renvoie C)galement l'ordre de dC)calage q = 8, et nous avons d = 1. C  partir de PACF, il est clair que dans les 6 dC)calages, l'AR est significatif. ce qui signifie que nous pouvons utiliser p = 6.
+```{r}
+deseasonal_cnt.arima <- arima(deseasonal_cnt.diff1, order = c(6,0,8))
+```
+```{r}
+deseasonal_cnt.arima
+```
+Peut-C*tre que le processus que nous avons suivi nb est pas la meilleure faC'on de sC)lectionner p d et q. Nous devons C)valuer ce modC(le et itC)rer.
+
+II - Monter un ARIMA avec Auto-ARIMA
+Q1 - Utilisez la fonction auto.arima () pour ajuster un modC(le ARIMA de deseasonal_cnt
+
+```{r}
+deseasonal_cnt.autoarima <- auto.arima(deseasonal_cnt, seasonal = FALSE)
+deseasonal_cnt.autoarima
+```
+Q2 - VC)rifier les rC)sidus, qui ne devraient avoir aucun modC(le et C*tre normalement distribuC)s
+```{r}
+deseasonal_cnt.autoarima.residuals <- deseasonal_cnt.autoarima$residuals
+tsdisplay(deseasonal_cnt.autoarima.residuals, main='(1,1,1) Model Residuals') 
+```
+```{r}
+hist(deseasonal_cnt.autoarima.residuals)
+```
+```{r}
+shapiro.test(deseasonal_cnt.autoarima.residuals)
+```
+Les rC)sidus ne sont pas normalement distribuC)s. La fonction auto.arima () ne nous a pas donnC) un bon modC(le. Nous devrions itC)rer!
+
+III - C	valuer et itC)rer
+Q1 - S'il y a des modC(les visibles ou des biais, tracer ACF / PACF
+Q2 - Remontez le modC(le si nC)cessaire. Comparez les erreurs de modC(le et les critC(res d'ajustement tels que AIC ou BIC
+Nous allons former 10 modC(les Arima diffC)rents en changeant la valeur de p-order.
+```{r}
+aic.values <- c()
+for (p in (0:9)){
+  deseasonal_cnt.arima <- arima(deseasonal_cnt, order = c(p,0,8))
+  aic.values <- c(aic.values, deseasonal_cnt.arima$aic)
+}
+```
+```{r}
+which.min(aic.values)
+```
+L'ordre du modC(le qui a donnC) la valeur AIC minimale est p = 8, d = 0 et q = 8. Nous formons maintenant le modC(le C  utiliser pour les prC)visions.
+```{r}
+deseasonal_cnt.arima <- arima(deseasonal_cnt, order = c(8,0,8))
+deseasonal_cnt.arima
+```
+Q3 - Calculer les prC)visions C  l'aide du modC(le choisi
+```{r}
+deseasonal_cnt.cast <- forecast(deseasonal_cnt.arima)
+plot(deseasonal_cnt.cast)
+```
+```{r}
+acf(deseasonal_cnt.cast$residuals, lag.max=20)
+```
+```{r}
+Box.test(deseasonal_cnt.cast$residuals, lag=20, type="Ljung-Box")
+```
+Q4 - Tracez C  la fois la sC)rie chronologique originale et prC)vue
+```{r}
+plot(deseasonal_cnt, col="red") # original
+legend(1, 8600, legend=c("Original", "Fitted"), col=c("red", "blue"), lty=1:2, cex=0.8)
+lines(fitted(deseasonal_cnt.arima), col="blue") # fitted
+```
+IV - PrC)visions
+Q1 - Divisez les donnC)es en sC)ries de temps d'entraC.nement et de test
+```{r}
+end.time = time(deseasonal_cnt)[700]
+train.set <- window(deseasonal_cnt, end=end.time)
+test.set <- window(deseasonal_cnt, start=end.time)
+```
+Q2 - monter un modC(le Arima, manuellement et avec Auto-Arima sur la partie formation
+
+```{r}
+manual.fit <- Arima(train.set, order=c(8, 0, 8))
+manual.fc <- forecast(manual.fit, h=32)
+print(paste("Accuracy of the manual Arima model : ", accuracy(manual.fc, test.set)[2,"RMSE"]))
+```
+```{r}
+auto.fit <- auto.arima(train.set, seasonal = FALSE)
+auto.fc <- forecast(auto.fit, h=32)
+print(paste("Accuracy of the auto Arima model : ", accuracy(auto.fc, test.set)[2,"RMSE"]))
+```
+```{r}
+plot(deseasonal_cnt, col="red") # original
+legend(1, 8600, legend=c("Original", "Manual Arima"), col=c("red", "blue"), lty=1:2, cex=0.8)
+lines(fitted(manual.fc), col="blue") # manuall arima
+```
+```{r}
+plot(deseasonal_cnt, col="red") # original
+legend(1, 8600, legend=c("Original", "Auto Arima"), col=c("red", "green"), lty=1:2, cex=0.8)
+lines(fitted(auto.fit), col="green") # auto arima
+```
+Q3 - PrC)voir les 25 prochaines observations et tracer les ts originaux et les prC)visions
+```{r}
+deseasonal_cnt.forecast.manual <- forecast(manual.fit, h=25)
+deseasonal_cnt.forecast.auto <- forecast(auto.fit, h=25)
+
+par(mfrow=c(2,1))
+plot(deseasonal_cnt.forecast.manual, main = "Forecast with manual Arima", include = test.set)
+plot(deseasonal_cnt.forecast.auto, main = "Forecast with auto Arima", include = test.set)
+
+```
+Le modC(le manuel Arima donne une prC)vision plus naturelle que celle automatique Arima.
+
+
+Comme nous pouvons le voir dans l'analyse de la question no. 1, la tempC)rature est relativement C)levC)e en toutes saisons. La tempC)rature moyenne la plus basse C)tait au printemps (M = 12,21, ET = 4,21) et la tempC)rature moyenne la plus C)levC)e C)tait C  l'automne (M = 28,96, ET = 2,9). Entre les deux, il y a l'C)tC) avec une tempC)rature moyenne de 22,32 degrC)s Fahrenheit (SD = 5,03) et l'hiver avec une tempC)rature moyenne de 17,34 degrC)s Fahrenheit (SD = 4,42).
+
+En raison des tempC)ratures douces au printemps et en hiver et du temps chaud en C)tC) et en automne, la tempC)rature devrait C*tre fortement corrC)lC)e au montant total des locations de vC)los. Dans cette analyse, nous avons corrC)lC) la tempC)rature brute (tempC)rature nominale convertie), la tempC)rature ressentie convertie (tempC)rature brute) et la moyenne des deux. Comme nous pouvons le voir dans les parcelles de la question no. 2, les trois types de tempC)ratures sont en corrC)lation positive avec le montant total des locations de vC)los. Nous voyons C)galement que la valeur de corrC)lation n'est pas diffC)rente entre les trois types de tempC)ratures (cor = 0,63). Quoi qu'il en soit, l'analyse montre clairement qu'il existe une relation entre ces deux variables.
+
+Nous savons maintenant que cette tempC)rature est associC)e au montant total des locations de vC)los. C'est la raison pour laquelle nous avons testC) s'il y a une diffC)rence entre la tempC)rature rC)elle et la tempC)rature ressentie. L'analyse montre qu'il existe une diffC)rence significative entre ces deux variables (t = -8,3151, df = 1450,245). Il existe toujours une diffC)rence significative entre la tempC)rature rC)elle et la tempC)rature ressentie au fil des saisons: printemps (t = -5,46, df = 350,98), C)tC) (t = -6,79, df = 364,15), automne (t = -11,37, df = 357,9) et hiver (t = -7,05, df = 351,9). Cela pourrait indiquer que la tempC)rature joue un rC4le important dans la location de vC)los.
+
+En raison de ces rC)sultats, nous avons recherchC) l'association entre les deux groupes (enregistrC)s vs occasionnels) en fonction de la tempC)rature. Comme nous pouvons le voir sur le graphique, au fur et C  mesure que la tempC)rature augmente, le nombre de locations de vC)los augmente C)galement chez les deux utilisateurs. Il semble que les utilisateurs enregistrC)s louent encore plus de vC)los que les utilisateurs occasionnels. Cb est pourquoi nous avons calculC) la corrC)lation entre les deux utilisateurs et la tempC)rature rC)elle. Il montre que la corrC)lation est C)gale pour les deux groupes (cor = 0,54). La diffC)rence de prC)sentation pourrait C*tre biaisC)e en raison du nombre inC)gal d'utilisateurs enregistrC)s (max = 6946) et occasionnels (max = 3410). Cependant, le graphique confirme en partie le rC4le important de la tempC)rature.
+
+Ensuite, C  la question 5, nous avons calculC) une rC)gression linC)aire, car nous pensions que la mC)tC)o et les vacances seraient de bons prC)dicteurs de la location de vC)los. Cela montre clairement que les vacances sont un prC)dicteur nC)gatif significatif (estimation = -929,5). Il montre C)galement que le temps beau par rapport au temps nuageux (par dC)faut) est un prC)dicteur positif significatif (estimation = 848,5) et le temps humide par rapport C  l'C)tude mC)tC)orologique est un prC)dicteur nC)gatif significatif (estimation = -2255,2) de la location de vC)los. Le mauvais temps n'C)tait pas inclus car C  cette C)poque, il n'y avait pas de location de vC)los.
+
+Maintenant, nous avons utilisC) un test anova, qu'il y ait des effets sur la mC)tC)o et les vacances ou non. L'anova a montrC) un effet significatif pour le temps (valeur F = 41,010, Df = 2, valeur p <0,01) mais un effet non significatif pour les vacances (valeur F = 3797, Df = 1, valeur p = 0,05173) . Ensuite, nous avons comparC) les trois types de temps diffC)rents avec le TukeyHSD. Les moyens de location de vC)los en fonction du temps B+beau-nuageuxB;, B+humide-nuageuxB; et B+humide-agrC)ableB; diffC)raient de maniC(re significative (chaque valeur p <0,01). Cela signifie que la mC)tC)o et la tempC)rature affectent le nombre de locations de vC)los.
+
+En question non. 6 nous avons tracC) l'humiditC) moyenne, la tempC)rature moyenne, la vitesse moyenne du vent et les locations totales moyennes par mois. Comme nous pouvons le voir, le montant total des locations de vC)los augmente avec la tempC)rature par mois. Alors qu'il semble que les locations soient indC)pendantes de la vitesse du vent et de l'humiditC), car elles sont quasi constantes au fil des mois. Cela confirme C)galement d'une part la forte corrC)lation entre les locations et la tempC)rature et d'autre part que le beau temps pourrait C*tre un bon prC)dicteur.
+
+C  la question 7, nous avons crC)C) une fonction personnalisC)e. Comme nous pouvons le voir, la fonction personnalisC)e nous permet de dC)finir nos propres limites dC)finies sur la situation mC)tC)orologique pour savoir combien de jours C)taient appropriC)s pour faire du vC)lo dans diffC)rentes conditions. Les rC)sultats montrent que trC(s peu de jours C)taient infC)rieurs C  5 B0 C, avec une vitesse du vent d'au moins 40 km / h et un temps nuageux C  pluvieux. Si nous examinons les distributions dans la mission prC)cC)dente, cela montre que la vitesse du vent en gC)nC)ral n'C)tait pas trC(s C)levC)e C  Washington D.C. et que les tempC)ratures moyennes ne sont pas tombC)es en dessous de 10 B0 C. Avec des limites plus strictes de min. 10 B0 C, vitesse du vent de 20 km / h et exclusion des conditions mC)tC)orologiques humides, seule la moitiC) environ des jours C)tait suitalbe pour une randonnC)e C  vC)lo. Cela pourrait C*tre important pour les recherches futures. Avec cette fonction, vous pouvez calculer le nombre de jours appropriC)s pour faire du vC)lo dans diffC)rentes villes. Avec ces rC)sultats, les systC(mes de location de vC)los pourraient C*tre mis en place dans les villes avec de nombreux jours appropriC)s et surtout rC)duire les coC;ts.
+
+En conclusion, nous pouvons dire que le nombre de locations de vC)los dC)pend principalement de la mC)tC)o et de la tempC)rature rC)elle et ressentie. L'analyse montre qu'il existe une relation positive entre le nombre de locations de vC)los et la tempC)rature. Et comme nous pouvons le voir dans l'intrigue de la question no. 6 le montant moyen des locations de vC)los augmente et diminue avec la tempC)rature. Les gens louent donc principalement des vC)los les jours de beau temps et la tempC)rature est agrC)able. Cela pourrait C*tre important pour la planification de nouvelles stations de location de vC)los.
+
+
+
